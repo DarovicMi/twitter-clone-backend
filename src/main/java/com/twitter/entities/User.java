@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class User {
     @Size(max = 255)
     private String email;
 
-    private Date creationDate;
+    private LocalDateTime creationDate;
 
     @Enumerated(value = EnumType.STRING)
     private UserStatus USER_STATUS;

@@ -21,7 +21,7 @@ public class SecurityConfig {
 
     private static final String[] WHITE_LIST_URLS = {
             "/register", "/users", "/verifyRegistration", "/resendVerifyToken",
-            "/resetPassword", "/savePassword", "/changePassword"
+            "/resetPassword", "/savePassword", "/changePassword", "/tweet"
     };
 
     @Bean
@@ -31,9 +31,10 @@ public class SecurityConfig {
                 .and()
                 .csrf()
                 .disable()
-                .authorizeHttpRequests()
+                .authorizeRequests()
                 .antMatchers(WHITE_LIST_URLS)
-                .permitAll();
+                .permitAll().anyRequest().
+                authenticated();
         return http.build();
     }
 

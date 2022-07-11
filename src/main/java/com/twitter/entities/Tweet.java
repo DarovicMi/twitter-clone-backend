@@ -30,7 +30,7 @@ public class Tweet {
     private LocalDateTime tweetUpdatedAt;
 
     @ManyToOne
-    private User tweetUser;
+    private User tweetUser_id;
 
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "commentTweetId")

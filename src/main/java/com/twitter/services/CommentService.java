@@ -28,9 +28,7 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public Comment createTweetComment(Long tweetId, Authentication authentication, Comment comment) throws TweetNotFoundException {
-        // TODO: load user from spring context
-        //comment.setCommentUserId();
+    public void createTweetComment(Long tweetId, Authentication authentication, Comment comment) throws TweetNotFoundException {
         Optional<Tweet> tweet = tweetRepository.findById(tweetId);
         User loggedInUser = userRepository.findByUsername(authentication.getName());
         if (tweet.isPresent()) {
@@ -41,7 +39,7 @@ public class CommentService {
         } else {
             throw new TweetNotFoundException("Tweet doesn't exist");
         }
-        return commentRepository.save(comment);
+        commentRepository.save(comment);
     }
 
     public void deleteComment(Authentication authentication, Long commentId) throws Exception {

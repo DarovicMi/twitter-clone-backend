@@ -28,10 +28,10 @@ public class UserController {
     private ApplicationEventPublisher publisher;
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody User user, final HttpServletRequest request) throws Exception {
+    public User registerUser(@RequestBody User user, final HttpServletRequest request) throws Exception {
          userService.registerUser(user);
          publisher.publishEvent(new RegistrationEvent(user,applicationUrl(request)));
-         return "User successfully registered";
+         return user;
     }
 
     @GetMapping("/users")
@@ -40,8 +40,9 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public void updateUser(@PathVariable("id") Long id,@RequestBody User user) throws UserNotFoundException {
+    public User updateUser(@PathVariable("id") Long id,@RequestBody User user) throws UserNotFoundException {
        userService.updateUser(id,user);
+       return user;
     }
 
     @DeleteMapping("/users/{id}")

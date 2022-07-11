@@ -7,10 +7,11 @@ import com.twitter.repositories.TweetRepository;
 import com.twitter.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class TweetService {
@@ -21,12 +22,16 @@ public class TweetService {
     @Autowired
     private UserRepository userRepository;
 
-    public Tweet createTweet(Authentication authentication, Tweet tweet) {
-        User loggedInUser = userRepository.findByUsername(authentication.getName());
-        tweet.setTweetUser(loggedInUser);
+
+    public Tweet createTweet(Tweet tweet) {
+        Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+       User loggedInUser = userRepository.findByUsername(principal.getName());
+       tweet.setTweetUser_id(loggedInUser);
         tweet.setTweetCreatedAt(LocalDateTime.now());
         tweet.setTweetUpdatedAt(LocalDateTime.now());
         return tweetRepository.save(tweet);
+
     }
 
     public Tweet updateTweet(Authentication authentication, Tweet tweet) throws Exception {
@@ -35,7 +40,7 @@ public class TweetService {
         if(updatedTweet == null) {
             throw new TweetNotFoundException("Tweet doesn't exist");
         }
-        if(updatedTweet.getTweetUser() != loggedInUser) {
+        if(updatedTweet.getTweetUser_id() != loggedInUser) {
             throw new Exception("You are not authorized to edit this tweet");
         }
         updatedTweet.setTweetMessage(tweet.getTweetMessage());
@@ -49,7 +54,7 @@ public class TweetService {
             throw new TweetNotFoundException("Tweet doesn't exist");
         }
         User loggedInUser = userRepository.findByUsername(authentication.getName());
-        if(deletedTweet.getTweetUser() != loggedInUser){
+        if(deletedTweet.getTweetUser_id() != loggedInUser){
             throw new Exception("You are not authorized to delete this tweet");
         }
         tweetRepository.delete(deletedTweet);

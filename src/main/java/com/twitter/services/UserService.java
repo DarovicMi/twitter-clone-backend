@@ -9,10 +9,10 @@ import com.twitter.repositories.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
+
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -46,22 +46,23 @@ public class UserService {
         String userEmail = user.getEmail();
         String userUserName = user.getUsername();
         String userPassword = user.getPassword();
+        LocalDateTime userCreationDate = user.getCreationDate();
 
-        boolean invalidUsername = (userUserName == null) || !userUserName.matches("[A-Za-z0-9_]+");
-        boolean invalidEmail = (userEmail == null) || !userEmail.matches("[A-Za-z0-9_]+@[A-Za-z0-9.]+");
-        boolean invalidPassword = (userPassword == null) || !userPassword.matches("[A-Za-z0-9@#]+");
+        boolean invalidUsername = (userUserName == null);
+        boolean invalidEmail = (userEmail == null);
+        boolean invalidPassword = (userPassword == null);
 
         if(invalidPassword) throw new InvalidPasswordException("Incorrect password");
         if(invalidUsername) throw new InvalidUsernameException("Incorrect username");
         if(invalidEmail) throw new InvalidEmailException("Incorrect email");
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
+        user.setCreationDate(LocalDateTime.now());
         userRepository.save(user);
     }
 
     public void changePassword(User user, String newPassword) throws InvalidPasswordException {
-        boolean invalidPassword = (user.getPassword() == null); //||!user.getPassword().matches("[A-Za-z0-9@#]+");
+        boolean invalidPassword = (user.getPassword() == null);
         if(invalidPassword) throw new InvalidPasswordException("Incorrect password");
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -103,8 +104,7 @@ public class UserService {
             verificationTokenRepository.delete(verificationToken);
             return "Token has expired";
         }
-        UserManagement userManager = new UserManagement(user);
-        userManager.isEnabled();
+
        userRepository.save(user);
         return "Valid";
 
