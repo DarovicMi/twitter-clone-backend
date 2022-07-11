@@ -24,11 +24,11 @@ public class User {
     private Long userId;
 
     @NotNull(message = "Username field cannot be empty")
-    @Size(min = 8, max = 16)
+   // @Size(min = 8, max = 16)
     private String username;
 
     @NotNull(message = "Password field cannot be empty")
-    @Size(min = 8, max = 16)
+   // @Size(min = 8, max = 16)
     private String password;
 
     @NotNull(message = "Email field cannot be empty")

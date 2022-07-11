@@ -62,7 +62,5 @@ public class TweetService {
         }
         return tweet;
     }
-    public List<Tweet> getUserTweets(Long userId){
-        return tweetRepository.findLatestTweetByUser(userId);
-    }
+
 }

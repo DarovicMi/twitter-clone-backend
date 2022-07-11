@@ -19,16 +19,21 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final String[] WHITE_LIST_URLS = {
+            "/register", "/users", "/verifyRegistration", "/resendVerifyToken",
+            "/resetPassword", "/savePassword", "/changePassword"
+    };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable().cors().disable().authorizeRequests()
-                .anyRequest()
-                .authenticated()
+        http
+                .cors()
                 .and()
-                .httpBasic()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
+                .csrf()
+                .disable()
+                .authorizeHttpRequests()
+                .antMatchers(WHITE_LIST_URLS)
+                .permitAll();
         return http.build();
     }
 

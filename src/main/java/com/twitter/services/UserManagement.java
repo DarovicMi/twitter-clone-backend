@@ -49,6 +49,6 @@ public class UserManagement implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }

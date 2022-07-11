@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface TweetRepository extends JpaRepository<Tweet, Long> {
-    List<Tweet> findLatestTweetByUser(Long userId);
 
-    List<Tweet> findTweetsThatUserFollows(User user);
+
 }
