@@ -1,9 +1,5 @@
 package com.twitter.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -12,27 +8,63 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class Tweet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long tweetId;
+    private Long id;
 
     @NotNull(message = "Tweet message cannot be empty")
     @Size(max = 255)
-    private String tweetMessage;
+    private String message;
 
-    private LocalDateTime tweetCreatedAt;
+    private LocalDateTime createdAt;
 
-    private LocalDateTime tweetUpdatedAt;
+    private LocalDateTime updatedAt;
 
     @ManyToOne
-    private User tweetUser_id;
+    private User user;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "commentTweetId")
+    @OneToMany
     List<Comment> comments;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
 }

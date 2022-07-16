@@ -10,11 +10,12 @@ import com.twitter.repositories.TweetRepository;
 import com.twitter.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public class CommentService {
@@ -28,56 +29,60 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public void createTweetComment(Long tweetId, Authentication authentication, Comment comment) throws TweetNotFoundException {
-        Optional<Tweet> tweet = tweetRepository.findById(tweetId);
-        User loggedInUser = userRepository.findByUsername(authentication.getName());
-        if (tweet.isPresent()) {
-            comment.setTweetId(tweet.get());
-            comment.setCommentUserId(loggedInUser);
-            comment.setCommentCreatedAt(LocalDateTime.now());
-            comment.setCommentUpdatedAt(LocalDateTime.now());
+
+    private User getLoggedInUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByUsername(authentication.getName());
+    }
+
+    public Comment createTweetComment(Long tweetId, Comment comment) throws TweetNotFoundException {
+        Tweet tweet = tweetRepository.findById(tweetId).orElse(null);
+        User loggedInUser = getLoggedInUser();
+        if (tweet != null) {
+            comment.setTweet(tweet);
+            comment.setUser(loggedInUser);
+            comment.setCreatedAt(LocalDateTime.now());
+            comment.setUpdatedAt(LocalDateTime.now());
         } else {
             throw new TweetNotFoundException("Tweet doesn't exist");
         }
-        commentRepository.save(comment);
+       return commentRepository.save(comment);
     }
 
-    public void deleteComment(Authentication authentication, Long commentId) throws Exception {
+    public List<Comment> getTweetComments(Long tweetId) {
+      Tweet tweet = tweetRepository.findById(tweetId).orElse(null);
+        return commentRepository.findByTweetId(tweet);
+    }
 
+    public void deleteComment(Long commentId) throws Exception {
         Comment deletedComment = commentRepository.findById(commentId).orElse(null);
         if (deletedComment == null) {
             throw new CommentNotFoundException("Comment doesn't exist");
         }
-        User loggedInUser = userRepository.findByUsername(authentication.getName());
+        User loggedInUser = getLoggedInUser();
 
-        if (deletedComment.getCommentUserId() != loggedInUser) {
+        if (deletedComment.getUser() != loggedInUser) {
             throw new Exception("Not authorized to delete this comment");
         }
         commentRepository.delete(deletedComment);
 
     }
 
-    public Comment updateComment(Authentication authentication, Comment comment) throws Exception {
-        Comment updatedComment = commentRepository.findById(comment.getCommentId()).orElse(null);
-        if(updatedComment == null) {
+    public void updateComment(Long commentId, Comment comment) throws Exception {
+        Comment updatedComment = commentRepository.findById(commentId).orElse(null);
+        if (updatedComment == null) {
             throw new CommentNotFoundException("Comment doesn't exist");
         }
-        User loggedInUser = userRepository.findByUsername(authentication.getName());
+        User loggedInUser = getLoggedInUser();
 
-        if(updatedComment.getCommentUserId() != loggedInUser){
+        if (updatedComment.getUser() != loggedInUser) {
             throw new Exception("Not authorized to edit this comment");
         }
-        updatedComment.setCommentText(comment.getCommentText());
-        updatedComment.setCommentUpdatedAt(LocalDateTime.now());
 
+        updatedComment.setText(comment.getText());
+        updatedComment.setUpdatedAt(LocalDateTime.now());
         commentRepository.save(updatedComment);
-
-        return updatedComment;
     }
 
-    public List<Comment> showComments(Long tweet_id){
-        Tweet tweet = tweetRepository.findById(tweet_id).orElse(null);
-        return commentRepository.findByTweetId(tweet);
-    }
 
 }

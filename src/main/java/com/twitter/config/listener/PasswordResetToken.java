@@ -1,16 +1,12 @@
 package com.twitter.config.listener;
 
 import com.twitter.entities.User;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Calendar;
 import java.util.Date;
 
 @Entity
-@Data
-@NoArgsConstructor
 public class PasswordResetToken {
     private static final int EXPIRATION_TIME = 10;
 
@@ -39,6 +35,10 @@ public class PasswordResetToken {
         this.expirationDate = calculateExpirationDate(EXPIRATION_TIME);
     }
 
+    public PasswordResetToken() {
+
+    }
+
     private Date calculateExpirationDate(int time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(new Date().getTime());
@@ -46,4 +46,35 @@ public class PasswordResetToken {
         return new Date(calendar.getTime().getTime());
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

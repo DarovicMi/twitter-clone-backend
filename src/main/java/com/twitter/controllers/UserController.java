@@ -1,6 +1,7 @@
 package com.twitter.controllers;
 
 import com.twitter.config.event.RegistrationEvent;
+import com.twitter.config.listener.TokenStatusEnum;
 import com.twitter.config.listener.VerificationToken;
 import com.twitter.config.model.PasswordModel;
 import com.twitter.entities.User;
@@ -34,6 +35,7 @@ public class UserController {
          return user;
     }
 
+
     @GetMapping("/users")
     public List<User> getUsers(){
         return userService.getUsers();
@@ -53,13 +55,12 @@ public class UserController {
 
 
     @GetMapping("/verifyRegistration")
-    public String verifyRegistration(@RequestParam(name = "token") String token){
-        String result = userService.validateVerificationToken(token);
-        if(result.equalsIgnoreCase("Valid")){
-            return "User verified successfully";
-        } else {
-            return "User verification failed";
+    public TokenStatusEnum verifyRegistration(@RequestParam(name = "token") String token){
+        TokenStatusEnum result = userService.validateVerificationToken(token);
+        if (!result.equals(TokenStatusEnum.VALID_TOKEN)) {
+            result = TokenStatusEnum.INVALID_TOKEN;
         }
+        return result;
     }
     @GetMapping("/resendVerifyToken")
     public String resendVerificationToken(@RequestParam(name = "token") String oldToken, HttpServletRequest request){
@@ -82,9 +83,10 @@ public class UserController {
 
     @PostMapping("/savePassword")
     public String savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel) throws InvalidPasswordException {
-        String result = userService.validatePasswordResetToken(token);
-        if(!result.equalsIgnoreCase("Valid Password Reset Token")){
-            return "Invalid token";
+        TokenStatusEnum result = userService.validatePasswordResetToken(token);
+        if(!result.equals(TokenStatusEnum.VALID_TOKEN)){
+            result = TokenStatusEnum.INVALID_TOKEN;
+            return result.toString();
         }
         Optional<User> user = userService.getUserByPasswordResetToken(token);
         if(user.isPresent()){
