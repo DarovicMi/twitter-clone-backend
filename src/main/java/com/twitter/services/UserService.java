@@ -134,6 +134,11 @@ public class UserService {
 
     }
 
+    public VerificationToken getUserOldToken(Long userId) throws Exception {
+        User user = userRepository.findById(userId).orElseThrow(() -> new Exception("User not found"));
+        return verificationTokenRepository.findVerificationTokenByUserId(user.getId());
+    }
+
     public VerificationToken generateNewVerificationToken(String oldToken) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(oldToken);
         verificationToken.setToken(UUID.randomUUID().toString());

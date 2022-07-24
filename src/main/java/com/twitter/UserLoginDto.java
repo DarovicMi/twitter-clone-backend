@@ -5,6 +5,16 @@ public class UserLoginDto {
     private String password;
     private String accountStatus;
 
+    public String getOldToken() {
+        return oldToken;
+    }
+
+    public void setOldToken(String oldToken) {
+        this.oldToken = oldToken;
+    }
+
+    private String oldToken;
+
     public UserLoginDto() {
     }
 

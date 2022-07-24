@@ -67,6 +67,10 @@ public class UserController {
         }
         return result;
     }
+    @GetMapping("/user/{userId}/token")
+    public VerificationToken getUserOldToken(@PathVariable("userId") Long userId) throws Exception {
+        return userService.getUserOldToken(userId);
+    }
 
     @GetMapping("/resendVerifyToken")
     public LinkEnum resendVerificationToken(@RequestParam(name = "token") String oldToken, HttpServletRequest request) {

@@ -24,6 +24,7 @@ public class AuthController {
         if(user.getUsername() != null && user.getPassword() != null){
             UserLoginDto userLoginDto =
                     new UserLoginDto(user.getUsername(), user.getPassword(), user.getAccountStatus().name());
+            userLoginDto.setOldToken(userService.getUserOldToken(user.getId()).getToken());
             return userLoginDto;
         } else {
             throw new RuntimeException("User invalid credentials");
