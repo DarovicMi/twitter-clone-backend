@@ -1,6 +1,7 @@
 package com.twitter.controllers;
 
 
+import com.twitter.UserLoginDto;
 import com.twitter.entities.User;
 import com.twitter.services.UserService;
 import com.twitter.verificationenums.LoginEnum;
@@ -18,12 +19,14 @@ public class AuthController {
     private UserService userService;
 
     @GetMapping("/login")
-    public LoginEnum authentication() throws Exception {
+    public UserLoginDto authentication() throws Exception {
         User user = userService.authenticate();
         if(user.getUsername() != null && user.getPassword() != null){
-            return LoginEnum.SUCCESS;
+            UserLoginDto userLoginDto =
+                    new UserLoginDto(user.getUsername(), user.getPassword(), user.getAccountStatus().name());
+            return userLoginDto;
         } else {
-            return LoginEnum.FAILURE;
+            throw new RuntimeException("User invalid credentials");
         }
     }
 }
