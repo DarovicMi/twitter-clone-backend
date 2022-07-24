@@ -1,4 +1,4 @@
-package com.twitter.config.event;
+package com.twitter.event;
 
 import com.twitter.entities.User;
 import lombok.Getter;

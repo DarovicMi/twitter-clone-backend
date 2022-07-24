@@ -1,24 +1,25 @@
 package com.twitter.controllers;
 
-import com.twitter.config.event.RegistrationEvent;
-import com.twitter.config.listener.TokenStatusEnum;
-import com.twitter.config.listener.VerificationToken;
-import com.twitter.config.model.PasswordModel;
 import com.twitter.entities.User;
+import com.twitter.event.PasswordEvent;
+import com.twitter.event.RegistrationEvent;
+import com.twitter.event.TokenEvent;
 import com.twitter.exceptions.InvalidPasswordException;
 import com.twitter.exceptions.UserNotFoundException;
+import com.twitter.model.PasswordModel;
+import com.twitter.model.PasswordResetEmailVerification;
 import com.twitter.services.UserService;
-import lombok.extern.slf4j.Slf4j;
+import com.twitter.verificationenums.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import static com.twitter.verificationenums.PasswordChangeState.*;
 
-@Slf4j
 @RestController
 public class UserController {
 
@@ -28,23 +29,28 @@ public class UserController {
     @Autowired
     private ApplicationEventPublisher publisher;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
+
     @PostMapping("/register")
     public User registerUser(@RequestBody User user, final HttpServletRequest request) throws Exception {
-         userService.registerUser(user);
-         publisher.publishEvent(new RegistrationEvent(user,applicationUrl(request)));
-         return user;
+        userService.registerUser(user);
+        publisher.publishEvent(new RegistrationEvent(user, applicationUrl(request)));
+        return user;
     }
 
 
     @GetMapping("/users")
-    public List<User> getUsers(){
+    public List<User> getUsers() {
         return userService.getUsers();
     }
 
     @PutMapping("/users/{id}")
-    public User updateUser(@PathVariable("id") Long id,@RequestBody User user) throws UserNotFoundException {
-       userService.updateUser(id,user);
-       return user;
+    public User updateUser(@PathVariable("id") Long id, @RequestBody User user) throws UserNotFoundException {
+        userService.updateUser(id, user);
+        return user;
     }
 
     @DeleteMapping("/users/{id}")
@@ -53,59 +59,42 @@ public class UserController {
     }
 
 
-
     @GetMapping("/verifyRegistration")
-    public TokenStatusEnum verifyRegistration(@RequestParam(name = "token") String token){
+    public TokenStatusEnum verifyRegistration(@RequestParam(name = "token") String token) {
         TokenStatusEnum result = userService.validateVerificationToken(token);
         if (!result.equals(TokenStatusEnum.VALID_TOKEN)) {
             result = TokenStatusEnum.INVALID_TOKEN;
         }
         return result;
     }
+
     @GetMapping("/resendVerifyToken")
-    public String resendVerificationToken(@RequestParam(name = "token") String oldToken, HttpServletRequest request){
+    public LinkEnum resendVerificationToken(@RequestParam(name = "token") String oldToken, HttpServletRequest request) {
         VerificationToken verificationToken = userService.generateNewVerificationToken(oldToken);
         User user = verificationToken.getUser();
-        resendVerificationTokenMail(user,applicationUrl(request),verificationToken);
-        return "A link to verify your account has been sent";
+        publisher.publishEvent(new TokenEvent(user, verificationToken, applicationUrl(request)));
+        return LinkEnum.LINK_SENT;
     }
+
     @PostMapping("/resetPassword")
-    public String resetPassword(@RequestBody PasswordModel passwordModel, HttpServletRequest request){
-        User user = userService.findUserByEmail(passwordModel.getEmail());
-        String url = "";
-        if(user != null) {
-            String token = UUID.randomUUID().toString();
-            userService.createPasswordResetTokenForUser(user,token);
-            url = passwordResetTokenMail(user, applicationUrl(request), token);
-        }
-        return url;
+    public void resetPassword(@RequestBody PasswordResetEmailVerification passwordResetEmailVerification, HttpServletRequest request) {
+        PasswordResetToken passwordResetToken = userService.validateOrGeneratePasswordResetToken(passwordResetEmailVerification.getEmail());
+        publisher.publishEvent(new PasswordEvent(passwordResetToken.getUser(), applicationUrl(request), passwordResetToken));
     }
 
     @PostMapping("/savePassword")
-    public String savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel) throws InvalidPasswordException {
+    public ResponseEntity<PasswordChangeState> savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel) throws InvalidPasswordException {
         TokenStatusEnum result = userService.validatePasswordResetToken(token);
-        if(!result.equals(TokenStatusEnum.VALID_TOKEN)){
-            result = TokenStatusEnum.INVALID_TOKEN;
-            return result.toString();
+        if (!result.equals(TokenStatusEnum.VALID_TOKEN)) {
+            return new ResponseEntity<>(INVALID_TOKEN_FOR_CHANGING_PASSWORD, HttpStatus.BAD_REQUEST);
         }
-        Optional<User> user = userService.getUserByPasswordResetToken(token);
-        if(user.isPresent()){
-            userService.changePassword(user.get(), passwordModel.getNewPassword());
-            return "Password changed successfully";
-        } else {
-            return "Failed to change password";
+        User user = userService.getUserByPasswordResetToken(token);
+        if (user != null && passwordEncoder.matches(passwordModel.getOldPassword(), user.getPassword())) {
+                userService.changePassword(user, passwordModel.getNewPassword());
+                return new ResponseEntity<>(PASSWORD_CHANGED_SUCCESSFULLY, HttpStatus.OK);
+
         }
-    }
-
-    private String passwordResetTokenMail(User user, String applicationUrl, String token) {
-        String url = applicationUrl + "/savePassword?token=" + token;
-        log.info("Click the link to reset your password: {}", url);
-        return url;
-    }
-
-    private void resendVerificationTokenMail(User user, String applicationUrl, VerificationToken verificationToken) {
-        String url = applicationUrl + "/verifyRegistration?token=" + verificationToken.getToken();
-        log.info("Click the link to verify your account: {}", url);
+        return new ResponseEntity<>(FAILED_TO_CHANGE_PASSWORD, HttpStatus.BAD_REQUEST);
     }
 
     private String applicationUrl(HttpServletRequest request) {

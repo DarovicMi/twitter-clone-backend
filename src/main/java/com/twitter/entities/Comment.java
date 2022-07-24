@@ -1,6 +1,8 @@
 package com.twitter.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -16,11 +18,22 @@ public class Comment {
     private User user;
 
     @ManyToOne
+    @JsonIgnore
     private Tweet tweet;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private boolean edited = false;
+
+    public boolean isEdited() {
+        return edited;
+    }
+
+    public void setEdited(boolean edited) {
+        this.edited = edited;
+    }
 
     public User getUser() {
         return user;
@@ -35,6 +48,7 @@ public class Comment {
     }
 
     public void setTweet(Tweet tweet) {
+        tweet.addComment(this);
         this.tweet = tweet;
     }
 

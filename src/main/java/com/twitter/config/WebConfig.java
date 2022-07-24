@@ -15,12 +15,13 @@ public class WebConfig {
         return (web) -> web.ignoring().antMatchers(HttpMethod.OPTIONS);
     }
 
-   public WebMvcConfigurer corsConfigurer(){
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry){
+            public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
             }
         };
-   }
+    }
 }

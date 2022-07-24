@@ -1,7 +1,8 @@
 package com.twitter.controllers;
 
 
-import com.twitter.entities.Follower;
+import com.twitter.model.FolloweeModel;
+import com.twitter.model.FollowerModel;
 import com.twitter.exceptions.UserNotFoundException;
 import com.twitter.services.FollowerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class FollowerController {
@@ -28,12 +30,18 @@ public class FollowerController {
     }
 
     @GetMapping("/user/{userId}/followers")
-    public List<Follower> getUserFollowers(@PathVariable("userId")Long userId){
-        return followerService.getUserFollowers(userId);
+    public List<FollowerModel> getUserFollowers(@PathVariable("userId")Long userId) throws UserNotFoundException {
+        return followerService.getUserFollowers(userId)
+                .stream()
+                .map(FollowerModel::mapFollowerToModel)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/user/{userId}/followee")
-    public List<Follower> getUserFollowee(@PathVariable("userId") Long userId) {
-        return followerService.getUserFollowee(userId);
+    public List<FolloweeModel> getUserFollowee(@PathVariable("userId") Long userId) {
+        return followerService.getUserFollowee(userId)
+                .stream()
+                .map(FolloweeModel::mapFolloweeToModel)
+                .collect(Collectors.toList());
     }
 }

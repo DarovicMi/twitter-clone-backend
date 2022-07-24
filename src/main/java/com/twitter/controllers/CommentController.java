@@ -3,15 +3,12 @@ package com.twitter.controllers;
 import com.twitter.entities.Comment;
 import com.twitter.exceptions.TweetNotFoundException;
 import com.twitter.services.CommentService;
-import com.twitter.services.TweetService;
-import com.twitter.services.UserService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j
+
 @RestController
 
 public class CommentController {
@@ -26,8 +23,8 @@ public class CommentController {
         return comment;
     }
 
-    @GetMapping("/tweet/{tweetId}/comment")
-    public List<Comment> getTweetComments(@PathVariable Long tweetId) {
+    @GetMapping("/tweet/{tweetId}/comments")
+    public List<Comment> getTweetComments(@PathVariable Long tweetId) throws TweetNotFoundException {
         return commentService.getTweetComments(tweetId);
     }
 

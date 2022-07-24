@@ -1,4 +1,4 @@
-package com.twitter.config.listener;
+package com.twitter.verificationenums;
 
 import com.twitter.entities.User;
 
@@ -24,6 +24,17 @@ public class PasswordResetToken {
             foreignKey = @ForeignKey(name = "FK_USER_PASSWORD_TOKEN"))
     private User user;
 
+    public TokenStatusEnum getTokenStatus() {
+        return tokenStatus;
+    }
+
+    public void setTokenStatus(TokenStatusEnum tokenStatus) {
+        this.tokenStatus = tokenStatus;
+    }
+
+    @Enumerated(value = EnumType.STRING)
+    private TokenStatusEnum tokenStatus;
+
     public PasswordResetToken(User user, String token) {
         this.token = token;
         this.user = user;
@@ -39,7 +50,7 @@ public class PasswordResetToken {
 
     }
 
-    private Date calculateExpirationDate(int time) {
+    public Date calculateExpirationDate(int time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(new Date().getTime());
         calendar.add(Calendar.MINUTE, time);

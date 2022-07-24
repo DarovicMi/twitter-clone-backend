@@ -1,6 +1,7 @@
-package com.twitter.config.event;
+package com.twitter.event;
 
 import com.twitter.entities.User;
+import com.twitter.services.EmailSenderService;
 import com.twitter.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +17,21 @@ public class RegistrationEventListener implements ApplicationListener<Registrati
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EmailSenderService emailService;
+
+
     @Override
     public void onApplicationEvent(RegistrationEvent event) {
         User user = event.getUser();
         String token = UUID.randomUUID().toString();
+        String subject = "Verify your registration";
         userService.saveVerificationTokenForUser(token,user);
 
         String url = event.getApplicationUrl() + "/verifyRegistration?token=" + token;
 
-        log.info("Click the link to verify your account: {}", url);
+        emailService.sendEmail(user.getEmail(),url,subject);
+
+       log.info("Click the link to verify your account: {}", url);
     }
 }

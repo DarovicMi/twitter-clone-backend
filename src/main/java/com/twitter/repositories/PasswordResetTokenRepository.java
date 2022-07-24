@@ -1,6 +1,7 @@
 package com.twitter.repositories;
 
-import com.twitter.config.listener.PasswordResetToken;
+import com.twitter.entities.User;
+import com.twitter.verificationenums.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
 
     PasswordResetToken findByToken(String token);
+
 }

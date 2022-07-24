@@ -1,4 +1,4 @@
-package com.twitter.config.listener;
+package com.twitter.verificationenums;
 
 import com.twitter.entities.User;
 
@@ -65,7 +65,7 @@ public class VerificationToken {
     }
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id",
+    @JoinColumn(name = "user_id",
     nullable = false,
     foreignKey = @ForeignKey(name = "FK_USER_VERIFY_TOKEN"))
     private User user;
@@ -84,7 +84,7 @@ public class VerificationToken {
         this.expirationDate = calculateExpirationDate(EXPIRATION_TIME);
     }
 
-    private Date calculateExpirationDate(int time) {
+    public Date calculateExpirationDate(int time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(new Date().getTime());
         calendar.add(Calendar.MINUTE, time);

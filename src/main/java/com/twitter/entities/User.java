@@ -4,6 +4,8 @@ package com.twitter.entities;
 
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -34,27 +36,29 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserAccountType accountType;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "follower")
     private List<Follower> follows;
 
-    @OneToMany
-    private List<Liker> likedItems;
+//    @OneToMany
+//    @JsonIgnore
+//    private List<Liker> likedItems;
 
-//    public List<Follower> getFollows() {
-//        return follows;
+    public List<Follower> getFollows() {
+        return follows;
+    }
+
+    public void setFollows(List<Follower> follows) {
+        this.follows = follows;
+    }
+
+//    public List<Liker> getLikedItems() {
+//        return likedItems;
 //    }
 //
-//    public void setFollows(List<Follower> follows) {
-//        this.follows = follows;
+//    public void setLikedItems(List<Liker> likedItems) {
+//        this.likedItems = likedItems;
 //    }
-
-    public List<Liker> getLikedItems() {
-        return likedItems;
-    }
-
-    public void setLikedItems(List<Liker> likedItems) {
-        this.likedItems = likedItems;
-    }
 
     public Long getId() {
         return id;
@@ -119,4 +123,5 @@ public class User {
     public void setAccountType(UserAccountType accountType) {
         this.accountType = accountType;
     }
+
 }

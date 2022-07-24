@@ -15,7 +15,5 @@ public interface TweetRepository extends JpaRepository<Tweet, Long> {
     @Query(value = "SELECT t FROM Tweet t WHERE t.user.id = ?1 ORDER BY updated_at DESC")
     List<Tweet> findLatestUserTweet(Long userId);
 
-    @Query(value = "SELECT * FROM tweet WHERE user_id IN (SELECT followee FROM follower WHERE follower = ?1) ORDER BY updated_at DESC ", nativeQuery = true)
-    List<Tweet> findUserTweets(User user);
 
 }

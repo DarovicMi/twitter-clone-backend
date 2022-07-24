@@ -1,28 +1,21 @@
 package com.twitter.controllers;
+
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 import com.twitter.exceptions.TweetNotFoundException;
-import com.twitter.repositories.UserRepository;
 import com.twitter.services.TweetService;
-import com.twitter.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 public class TweetController {
-    
-    @Autowired
-    private UserService userService;
+
     
     @Autowired
     private TweetService tweetService;
 
-    @Autowired
-    private UserRepository userRepository;
     
     @PostMapping("/tweet")
     public Tweet createTweet(@RequestBody Tweet tweet){
@@ -30,11 +23,14 @@ public class TweetController {
        return tweet;
     }
 
+    @PostMapping("/share/tweet/{tweetId}")
+    public List<User> shareTweet(@PathVariable("tweetId") Long tweetId) throws TweetNotFoundException {
+        return tweetService.shareTweet(tweetId);
+    }
+
     @GetMapping("/tweets/feed")
-    public List<Tweet> showFeed(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User loggedInUser = userRepository.findByUsername(authentication.getName());
-        return tweetService.showFeed(loggedInUser);
+    public List<Tweet> showFeed() {
+        return tweetService.showFeed();
     }
 
     @GetMapping("/tweets")
@@ -54,9 +50,9 @@ public class TweetController {
     public Tweet findTweet(@PathVariable Long tweetId) throws TweetNotFoundException {
        return tweetService.findTweet(tweetId);
     }
-    @GetMapping("/user/tweet/{tweetId}")
-    public List<Tweet> showUserTweets(@PathVariable("tweetId") Long tweetId){
-        return tweetService.showUserTweets(tweetId);
+    @GetMapping("/user/{userId}/tweets")
+    public List<Tweet> showUserTweets(@PathVariable("userId") Long userId){
+        return tweetService.showUserTweets(userId);
     }
 
     

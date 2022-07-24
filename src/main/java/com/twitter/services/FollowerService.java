@@ -20,17 +20,13 @@ public class FollowerService {
     @Autowired
     private FollowerRepository followerRepository;
 
-    public User getLoggedInUser(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return userRepository.findByUsername(authentication.getName());
-    }
+    @Autowired
+    private UserAuthenticationService userAuthenticationService;
 
     public void followUser(Long userId) throws UserNotFoundException {
-        User loggedInUser = getLoggedInUser();
-        User followee = userRepository.findById(userId).orElse(null);
-        if(followee == null){
-            throw new UserNotFoundException(String.format("User with id = %d doesn't exist", userId));
-        }
+        User loggedInUser = userAuthenticationService.getLoggedInUser();
+        User followee = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id = %d doesn't exist", userId)));
         Follower follower = new Follower();
         follower.setFollower(loggedInUser);
         follower.setFollowee(followee);
@@ -38,20 +34,16 @@ public class FollowerService {
     }
 
     public void unfollowUser(Long userId) throws Exception {
-        User loggedInUser = getLoggedInUser();
-        User following = userRepository.findById(userId).orElse(null);
-        if(following == null){
-            throw new UserNotFoundException(String.format("User with id = %d doesn't exist", userId));
-        }
-        Follower follower = followerRepository.findByFolloweeAndFollower(following,loggedInUser).orElse(null);
-        if(follower == null){
-            throw new Exception("Follower not found");
-        }
+        User loggedInUser = userAuthenticationService.getLoggedInUser();
+        User following = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id = %d doesn't exist", userId)));
+        Follower follower = followerRepository.findByFolloweeAndFollower(following,loggedInUser)
+                .orElseThrow(() -> new Exception("Follower not found"));
         followerRepository.delete(follower);
     }
 
-    public List<Follower> getUserFollowers(Long userId){
-        User user = userRepository.findById(userId).orElse(null);
+    public List<Follower> getUserFollowers(Long userId) throws UserNotFoundException {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(String.format("User with id = %d was not found",userId)));
         return followerRepository.findUserFollowers(user);
     }
 

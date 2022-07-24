@@ -1,8 +1,5 @@
 package com.twitter.services;
 
-import com.twitter.config.listener.PasswordResetToken;
-import com.twitter.config.listener.TokenStatusEnum;
-import com.twitter.config.listener.VerificationToken;
 import com.twitter.entities.User;
 import com.twitter.entities.UserAccountType;
 import com.twitter.entities.UserStatus;
@@ -10,6 +7,9 @@ import com.twitter.exceptions.*;
 import com.twitter.repositories.PasswordResetTokenRepository;
 import com.twitter.repositories.UserRepository;
 import com.twitter.repositories.VerificationTokenRepository;
+import com.twitter.verificationenums.PasswordResetToken;
+import com.twitter.verificationenums.TokenStatusEnum;
+import com.twitter.verificationenums.VerificationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,6 +34,21 @@ public class UserService {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
+    @Autowired
+    private UserAuthenticationService userAuthenticationService;
+
+    public User authenticate() throws Exception {
+        User loggedInUser = userAuthenticationService.getLoggedInUser();
+       User email = userRepository.findByEmail(loggedInUser.getEmail());
+       if(email == null){
+           throw new Exception("Email not found");
+       }
+       User password = userRepository.findByPassword(loggedInUser.getPassword());
+       if(password == null){
+           throw new Exception("Password not found");
+       }
+        return loggedInUser;
+    }
 
     public Boolean userExists(User user) {
         if (userRepository.findByUsername(user.getUsername()) != null) {
@@ -83,10 +97,8 @@ public class UserService {
 
 
     public void updateUser(Long userId, User user) throws UserNotFoundException {
-        User updatedUser = userRepository.findById(userId).orElse(null);
-        if (updatedUser == null) {
-            throw new UserNotFoundException(String.format("User with id = %s was not found", userId));
-        }
+        User updatedUser = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User with id = %s was not found", userId)));
         updatedUser.setEmail(user.getEmail());
         updatedUser.setAccountType(user.getAccountType());
         updatedUser.setImageUrl(user.getImageUrl());
@@ -113,7 +125,7 @@ public class UserService {
         User user = verificationToken.getUser();
         Calendar calendar = Calendar.getInstance();
         if ((verificationToken.getExpirationDate().getTime() - calendar.getTime().getTime()) <= 0) {
-            verificationTokenRepository.delete(verificationToken);
+            verificationToken.setTokenStatus(TokenStatusEnum.EXPIRED_TOKEN);
             return TokenStatusEnum.EXPIRED_TOKEN;
         }
         user.setAccountStatus(UserStatus.ACTIVE);
@@ -125,17 +137,30 @@ public class UserService {
     public VerificationToken generateNewVerificationToken(String oldToken) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(oldToken);
         verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setTokenStatus(TokenStatusEnum.VALID_TOKEN);
+        verificationToken.setExpirationDate(verificationToken.calculateExpirationDate(10));
         verificationTokenRepository.save(verificationToken);
         return verificationToken;
     }
 
-    public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public void createPasswordResetTokenForUser(User user, String token) {
+    public PasswordResetToken createPasswordResetTokenForUser(User user, String token) {
         PasswordResetToken passwordResetToken = new PasswordResetToken(user, token);
         passwordResetTokenRepository.save(passwordResetToken);
+        return passwordResetToken;
+    }
+
+    public PasswordResetToken validateOrGeneratePasswordResetToken(String email) {
+        User user = userRepository.findByEmail(email);
+        String token = UUID.randomUUID().toString();
+        if (user != null) {
+            PasswordResetToken passwordToken = createPasswordResetTokenForUser(user, token);
+            TokenStatusEnum passwordResetTokenStatus = validatePasswordResetToken(passwordToken.getToken());
+            if (passwordResetTokenStatus.equals(TokenStatusEnum.VALID_TOKEN)) {
+                return passwordToken;
+            }
+        }
+        token = UUID.randomUUID().toString();
+        return createPasswordResetTokenForUser(user, token);
     }
 
     public TokenStatusEnum validatePasswordResetToken(String token) {
@@ -143,17 +168,19 @@ public class UserService {
         if (passwordResetToken == null) {
             return TokenStatusEnum.INVALID_TOKEN;
         }
+        User user = passwordResetToken.getUser();
         Calendar calendar = Calendar.getInstance();
 
         if ((passwordResetToken.getExpirationDate().getTime() - calendar.getTime().getTime() <= 0)) {
-            passwordResetTokenRepository.delete(passwordResetToken);
+            passwordResetToken.setTokenStatus(TokenStatusEnum.EXPIRED_TOKEN);
             return TokenStatusEnum.EXPIRED_TOKEN;
         }
+        userRepository.save(user);
         return TokenStatusEnum.VALID_TOKEN;
     }
 
-    public Optional<User> getUserByPasswordResetToken(String token) {
-        return Optional.ofNullable(passwordResetTokenRepository.findByToken(token).getUser());
+    public User getUserByPasswordResetToken(String token) {
+        return passwordResetTokenRepository.findByToken(token).getUser();
     }
 
 

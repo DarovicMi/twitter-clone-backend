@@ -25,7 +25,26 @@ public class Tweet {
     private User user;
 
     @OneToMany
-    List<Comment> comments;
+    private List<Comment> comments;
+
+    public List<User> getSharedBy() {
+        return sharedBy;
+    }
+
+    public void setSharedBy(List<User> sharedBy) {
+        this.sharedBy = sharedBy;
+    }
+
+    @OneToMany
+    private List<User> sharedBy;
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
 
     public Long getId() {
         return id;
@@ -65,6 +84,13 @@ public class Tweet {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void addSharedBy(User user) {
+        this.sharedBy.add(user);
+    }
+    public void addComment(Comment comment){
+        this.comments.add(comment);
     }
 
 }
