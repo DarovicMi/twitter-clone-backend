@@ -1,9 +1,18 @@
 package com.twitter;
 
 public class UserLoginDto {
+    private Long id;
     private String username;
     private String password;
     private String accountStatus;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getOldToken() {
         return oldToken;
@@ -18,9 +27,10 @@ public class UserLoginDto {
     public UserLoginDto() {
     }
 
-    public UserLoginDto(String username, String password, String accountStatus) {
+    public UserLoginDto(Long id,String username, String password, String accountStatus) {
         this.username = username;
         this.password = password;
+        this.id = id;
         this.accountStatus = accountStatus;
     }
 

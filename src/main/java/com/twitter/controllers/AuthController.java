@@ -23,7 +23,7 @@ public class AuthController {
         User user = userService.authenticate();
         if(user.getUsername() != null && user.getPassword() != null){
             UserLoginDto userLoginDto =
-                    new UserLoginDto(user.getUsername(), user.getPassword(), user.getAccountStatus().name());
+                    new UserLoginDto(user.getId(),user.getUsername(), user.getPassword(), user.getAccountStatus().name());
             userLoginDto.setOldToken(userService.getUserOldToken(user.getId()).getToken());
             return userLoginDto;
         } else {

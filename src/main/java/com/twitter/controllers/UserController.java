@@ -52,8 +52,12 @@ public class UserController {
         userService.updateUser(id, user);
         return user;
     }
+    @GetMapping("/user/{userId}")
+    public User findUserById(@PathVariable("userId") Long userId) throws UserNotFoundException {
+        return userService.findUserById(userId);
+    }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/user/{id}")
     public void deleteUser(@PathVariable("id") Long id) throws UserNotFoundException {
         userService.deleteUser(id);
     }
@@ -66,10 +70,6 @@ public class UserController {
             result = TokenStatusEnum.INVALID_TOKEN;
         }
         return result;
-    }
-    @GetMapping("/user/{userId}/token")
-    public VerificationToken getUserOldToken(@PathVariable("userId") Long userId) throws Exception {
-        return userService.getUserOldToken(userId);
     }
 
     @GetMapping("/resendVerifyToken")
@@ -87,13 +87,16 @@ public class UserController {
     }
 
     @PostMapping("/savePassword")
-    public ResponseEntity<PasswordChangeState> savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel) throws InvalidPasswordException {
+    public ResponseEntity<PasswordChangeState> savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel) throws InvalidPasswordException, UserNotFoundException {
         TokenStatusEnum result = userService.validatePasswordResetToken(token);
+
         if (!result.equals(TokenStatusEnum.VALID_TOKEN)) {
             return new ResponseEntity<>(INVALID_TOKEN_FOR_CHANGING_PASSWORD, HttpStatus.BAD_REQUEST);
         }
         User user = userService.getUserByPasswordResetToken(token);
+
         if (user != null && passwordEncoder.matches(passwordModel.getOldPassword(), user.getPassword())) {
+                passwordModel.setToken(userService.getUserPasswordToken(user.getId()).getToken());
                 userService.changePassword(user, passwordModel.getNewPassword());
                 return new ResponseEntity<>(PASSWORD_CHANGED_SUCCESSFULLY, HttpStatus.OK);
 

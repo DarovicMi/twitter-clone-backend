@@ -115,6 +115,10 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    public User findUserById(Long id) throws UserNotFoundException {
+        return userRepository.findById(id).orElse(null);
+    }
+
     // VERIFICATION OF USER
 
     public TokenStatusEnum validateVerificationToken(String token) {
@@ -186,6 +190,12 @@ public class UserService {
 
     public User getUserByPasswordResetToken(String token) {
         return passwordResetTokenRepository.findByToken(token).getUser();
+    }
+
+    public PasswordResetToken getUserPasswordToken(Long userId) throws UserNotFoundException {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+        return passwordResetTokenRepository.findPasswordResetTokenByUserId(user.getId());
+
     }
 
 

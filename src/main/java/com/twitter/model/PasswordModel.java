@@ -6,6 +6,15 @@ public class PasswordModel {
     private String oldPassword;
     private String newPassword;
 
+    private String token;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public String getOldPassword() {
         return oldPassword;

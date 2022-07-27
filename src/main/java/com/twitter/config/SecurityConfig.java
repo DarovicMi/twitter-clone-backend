@@ -17,7 +17,7 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URLS = {
             "/register", "/users", "/verifyRegistration", "/resendVerifyToken",
             "/resetPassword", "/savePassword", "/changePassword", "/tweet","/tweets",
-            "tweet/{tweetId}", "follow/user/{userId}", "/login"
+            "tweet/{tweetId}", "follow/user/{userId}", "/login", "/user/{userId}"
     };
 
     @Bean
