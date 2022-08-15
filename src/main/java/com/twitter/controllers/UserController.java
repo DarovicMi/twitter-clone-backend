@@ -8,6 +8,8 @@ import com.twitter.exceptions.InvalidPasswordException;
 import com.twitter.exceptions.UserNotFoundException;
 import com.twitter.model.PasswordModel;
 import com.twitter.model.PasswordResetEmailVerification;
+import com.twitter.repositories.PasswordResetTokenRepository;
+import com.twitter.services.UserAuthenticationService;
 import com.twitter.services.UserService;
 import com.twitter.verificationenums.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,11 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserAuthenticationService userAuthenticationService;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
 
     @PostMapping("/register")
@@ -52,10 +59,21 @@ public class UserController {
         userService.updateUser(id, user);
         return user;
     }
+
     @GetMapping("/user/{userId}")
     public User findUserById(@PathVariable("userId") Long userId) throws UserNotFoundException {
         return userService.findUserById(userId);
     }
+    @GetMapping("/user/username/{username}")
+    public User findUserByUsername(@PathVariable("username") String username) {
+        return userService.findUserByUsername(username);
+    }
+
+    @GetMapping("/user/email/{email}")
+    public User findUserByEmail(@PathVariable("email") String email) {
+        return userService.findUserByEmail(email);
+    }
+
 
     @DeleteMapping("/user/{id}")
     public void deleteUser(@PathVariable("id") Long id) throws UserNotFoundException {
@@ -95,11 +113,22 @@ public class UserController {
         }
         User user = userService.getUserByPasswordResetToken(token);
 
-        if (user != null && passwordEncoder.matches(passwordModel.getOldPassword(), user.getPassword())) {
-                passwordModel.setToken(userService.getUserPasswordToken(user.getId()).getToken());
-                userService.changePassword(user, passwordModel.getNewPassword());
-                return new ResponseEntity<>(PASSWORD_CHANGED_SUCCESSFULLY, HttpStatus.OK);
+        if (user != null) {
 
+            passwordModel.setToken(userService.getUserPasswordToken(user.getId()).getToken());
+            userService.changePassword(user, passwordModel.getNewPassword());
+            passwordResetTokenRepository.delete(userService.getUserPasswordToken(user.getId()));
+            return new ResponseEntity<>(PASSWORD_CHANGED_SUCCESSFULLY, HttpStatus.OK);
+
+        }
+        return new ResponseEntity<>(FAILED_TO_CHANGE_PASSWORD, HttpStatus.BAD_REQUEST);
+    }
+    @PutMapping("/changePassword")
+    public ResponseEntity<PasswordChangeState> changePassword(@RequestBody PasswordModel passwordModel) throws InvalidPasswordException {
+        User user = userAuthenticationService.getLoggedInUser();
+        if(user != null && passwordEncoder.matches(passwordModel.getOldPassword(), user.getPassword())) {
+            userService.changeUserPassword(user, passwordModel.getNewPassword());
+            return new ResponseEntity<>(PASSWORD_CHANGED_SUCCESSFULLY, HttpStatus.OK);
         }
         return new ResponseEntity<>(FAILED_TO_CHANGE_PASSWORD, HttpStatus.BAD_REQUEST);
     }

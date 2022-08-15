@@ -1,5 +1,6 @@
 package com.twitter;
 
+
 public class UserLoginDto {
     private Long id;
     private String username;

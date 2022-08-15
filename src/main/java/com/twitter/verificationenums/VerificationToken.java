@@ -1,8 +1,6 @@
 package com.twitter.verificationenums;
 
 import com.twitter.entities.User;
-
-
 import javax.persistence.*;
 import java.util.Calendar;
 import java.util.Date;
@@ -10,7 +8,7 @@ import java.util.Date;
 @Entity
 public class VerificationToken {
 
-    private static final int EXPIRATION_TIME = 10;
+    private static final int EXPIRATION_TIME = 30;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

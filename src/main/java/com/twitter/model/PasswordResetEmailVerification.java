@@ -1,7 +1,5 @@
 package com.twitter.model;
 
-
-
 public class PasswordResetEmailVerification {
     private String email;
 

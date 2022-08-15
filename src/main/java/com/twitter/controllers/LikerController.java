@@ -1,18 +1,12 @@
 package com.twitter.controllers;
 
-
-import com.twitter.entities.Tweet;
 import com.twitter.model.LikerModel;
 import com.twitter.entities.Liker;
 import com.twitter.exceptions.CommentNotFoundException;
 import com.twitter.exceptions.TweetNotFoundException;
 import com.twitter.services.LikerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,11 +24,11 @@ public class LikerController {
     public Liker likeComment(@PathVariable("commentId") Long commentId) throws CommentNotFoundException {
         return likeService.likeComment(commentId);
     }
-    @PostMapping("/unlike/tweet/{tweetId}")
+    @DeleteMapping("/unlike/tweet/{tweetId}")
     public void unlikeTweet(@PathVariable("tweetId") Long tweetId) throws TweetNotFoundException {
         likeService.unlikeTweet(tweetId);
     }
-    @PostMapping("/unlike/comment/{commentId}")
+    @DeleteMapping("/unlike/comment/{commentId}")
     public void unlikeComment(@PathVariable("commentId") Long commentId) throws CommentNotFoundException {
         likeService.unlikeComment(commentId);
     }

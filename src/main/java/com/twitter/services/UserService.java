@@ -13,7 +13,6 @@ import com.twitter.verificationenums.VerificationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.List;
@@ -60,7 +59,7 @@ public class UserService {
         return false;
     }
 
-    public void registerUser(User user) throws Exception {
+    public User registerUser(User user) throws Exception {
         if (userExists(user)) {
             throw new UserAlreadyRegisteredException("User already registered");
         }
@@ -86,7 +85,7 @@ public class UserService {
         user.setImageUrl(imageUrl);
         user.setAccountStatus(UserStatus.INACTIVE);
 
-        userRepository.save(user);
+        return userRepository.save(user);
 
     }
 
@@ -116,7 +115,15 @@ public class UserService {
     }
 
     public User findUserById(Long id) throws UserNotFoundException {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(String.format("User with id = %s was not found",id)));
+    }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     // VERIFICATION OF USER
@@ -207,6 +214,12 @@ public class UserService {
     public void changePassword(User user, String newPassword) throws InvalidPasswordException {
         boolean invalidPassword = (user.getPassword() == null);
         if (invalidPassword) throw new InvalidPasswordException("Incorrect password");
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+    public void changeUserPassword(User user, String newPassword) throws InvalidPasswordException {
+        boolean invalidPassword = (user.getPassword() == null);
+        if(invalidPassword) throw new InvalidPasswordException("Incorrect password");
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }

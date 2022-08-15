@@ -7,7 +7,6 @@ import com.twitter.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository
@@ -23,4 +22,6 @@ public interface LikerRepository extends JpaRepository<Liker, Long> {
     Liker findByLikedCommentAndUser(Comment likedComment, User user);
 
     Liker findByLikedTweet(Tweet likedTweet);
+
+    Liker findByUser(User user);
 }

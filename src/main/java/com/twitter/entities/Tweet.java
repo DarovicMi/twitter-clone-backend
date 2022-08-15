@@ -1,6 +1,5 @@
 package com.twitter.entities;
 
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -23,6 +22,20 @@ public class Tweet {
 
     @ManyToOne
     private User user;
+
+
+    public int getTweetLikes() {
+        return this.tweetLikes;
+    }
+
+    public void ifTweetIsLiked() {
+        this.tweetLikes += 1;
+    }
+    public void ifTweetIsUnliked(){
+        this.tweetLikes -= 1;
+    }
+
+    private int tweetLikes = 0;
 
     @OneToMany
     private List<Comment> comments;

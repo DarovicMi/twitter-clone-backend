@@ -6,9 +6,9 @@ import com.twitter.exceptions.UserNotFoundException;
 import com.twitter.repositories.FollowerRepository;
 import com.twitter.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +30,9 @@ public class FollowerService {
         Follower follower = new Follower();
         follower.setFollower(loggedInUser);
         follower.setFollowee(followee);
+        List<Follower> userFollowers = new ArrayList<>();
+        userFollowers.add(follower);
+        loggedInUser.setFollows(userFollowers);
         followerRepository.save(follower);
     }
 

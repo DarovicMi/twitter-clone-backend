@@ -9,7 +9,6 @@ import com.twitter.repositories.CommentRepository;
 import com.twitter.repositories.TweetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,6 +63,4 @@ public class CommentService {
         updatedComment.setUpdatedAt(LocalDateTime.now());
         commentRepository.save(updatedComment);
     }
-
-
 }

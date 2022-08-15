@@ -5,12 +5,10 @@ import com.twitter.exceptions.TweetNotFoundException;
 import com.twitter.services.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 
 @RestController
-
 public class CommentController {
 
     @Autowired
@@ -37,5 +35,6 @@ public class CommentController {
     public void updateComment(@PathVariable("commentId") Long commentId, @RequestBody Comment comment) throws Exception {
         commentService.updateComment(commentId, comment);
     }
+
 
 }

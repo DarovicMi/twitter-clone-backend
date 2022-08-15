@@ -1,7 +1,5 @@
 package com.twitter.entities;
 
-import lombok.*;
-
 import javax.persistence.*;
 
 @Entity

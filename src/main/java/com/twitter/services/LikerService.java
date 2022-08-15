@@ -37,6 +37,7 @@ public class LikerService {
         Liker like = new Liker();
         like.setLikedTweet(tweet);
         like.setUser(loggedInUser);
+        tweet.ifTweetIsLiked();
         likerRepository.save(like);
         return like;
     }
@@ -54,8 +55,9 @@ public class LikerService {
     public void unlikeTweet(Long tweetId) throws TweetNotFoundException {
         Tweet tweet = tweetRepository.findById(tweetId).orElseThrow(() -> new TweetNotFoundException("Tweet doesn't exist"));
         User loggedInUser = userAuthenticationService.getLoggedInUser();
-        Liker unlike = likerRepository.findByLikedTweetAndUser(tweet,loggedInUser);
-        likerRepository.delete(unlike);
+        Liker like = likerRepository.findByUser(loggedInUser);
+        tweet.ifTweetIsUnliked();
+        likerRepository.delete(like);
     }
 
     public void unlikeComment(Long commentId) throws CommentNotFoundException {
@@ -67,6 +69,7 @@ public class LikerService {
 
     public List<Liker> getTweetLikes(Long tweetId) throws TweetNotFoundException {
         Tweet tweet = tweetRepository.findById(tweetId).orElseThrow(() -> new TweetNotFoundException("Tweet doesn't exist"));
+
         return likerRepository.getTweetLikes(tweet);
     }
 

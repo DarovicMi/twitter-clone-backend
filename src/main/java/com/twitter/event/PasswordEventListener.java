@@ -15,7 +15,7 @@ public class PasswordEventListener implements ApplicationListener<PasswordEvent>
     @Override
     public void onApplicationEvent(PasswordEvent event) {
         User user = event.getUser();
-        String url = "http://localhost:4200" + "/savePassword";
+        String url = "http://localhost:4200" + "/savePassword?token=" + event.getPasswordResetToken().getToken();
         emailService.sendEmail(user.getEmail(),"Click the following link to reset your password: \n" + url, "Reset Password");
 
     }
